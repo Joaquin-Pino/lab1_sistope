@@ -3,7 +3,7 @@
 #include "funciones.h"
 
 int main(){
-    const char* filename = "imagen.bin";
+    const char* filename = "imagen_ruido.bin";
     Imagen* img = cargar_imagen(filename);
     if (img == NULL) {
         return 1; // Error al cargar la imagen
