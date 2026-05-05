@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "funciones.h"
 
 Imagen* cargar_imagen(const char* filename) {
@@ -157,6 +158,34 @@ Imagen* dilatar(Imagen* img){
     }
 
     return out;
+}
+
+Imagen* get_ruido(Imagen* original, Imagen* preprocesada){
+    //preparar imagen resultante y sus datos
+    Imagen* resultado = (Imagen*)malloc(sizeof(Imagen));
+    resultado->ancho = original -> ancho;
+    resultado->alto = original->alto;
+    resultado->data = (unsigned char*)malloc(resultado->ancho * resultado->alto * sizeof(unsigned char));
+
+
+    for(int i = 0; i < original->alto; i++){
+        for(int j = 0; j< original->ancho; j++){
+            int indice = i * original->ancho + j;
+
+            //aplicar la resta
+            if(original->data[indice]==1){
+                //ambas imagenes tienen ese pixel, no es ruido
+                if(preprocesada->data[indice]==1){
+                    resultado->data[indice] = 0;
+                }
+                //solo la original lo tiene, es ruido
+                else{
+                    resultado->data[indice] = 1;
+                }
+            }
+        }
+    }
+    return resultado;
 }
 
 Punto* hough(Imagen* img, int r, int t, int* count){
