@@ -7,54 +7,102 @@
 
 #define PI 3.14159265358979323846
 
-// Estructura para manejar la imagen en memoria
+//estructura para manejar la imagen en memoria
 typedef struct {
-    int ancho;// 4 bytes: Ancho de la imagen
-    int alto;// 4 bytes: Alto de la imagen
-    unsigned char *data; // Arreglo unidimensional de (width * height) bytes
+    int ancho;
+    int alto;
+    unsigned char *data; //arreglo [ancho*alto]
 } Imagen;
 
-// Estructura para almacenar las coordenadas detectadas
+//estructura para almacenar las coordenadas
 typedef struct {
     int x;
     int y;
 } Punto;
 
-// Entradas: const char* filename (ruta del archivo binario a leer)
-// Salidas: Imagen* (puntero a la estructura de la imagen cargada, o NULL si falla)
-// Descripción: Lee la cabecera (ancho y alto) y los píxeles de un archivo .bin, reservando la memoria necesaria.
+/*
+Entradas: 
+    nombre (String: nombre del archivo a cargar)
+Salidas: 
+    Imagen (estructura utilizada para guardar los datos de la imagen)
+Descripcion: 
+    carga un archivo.bin al programa como un TDA Imagen
+*/
 Imagen* cargar_imagen(const char* filename);
 
+/*
+Entradas: 
+    nombre (String: nombre deseado para la imagen.bin)
+    img (Imagen: datos de la imagen que se desea guardar)
+Salidas:
+    int (0: no se pudo guardar, 1: se guardó correctamente)
+Descripción:
+    Se guarda la estructura Imagen recibida como un 
+    archivo binario con el nombre recibido
+*/
 int guardar_imagen(const char* filename, Imagen* img);
 
+/*
+Entradas: 
+    img (Imagen: imagen que se desea aplicar "erosion")
+Salidas:
+    Imagen (resultado de aplicar "erosion" a la img de entrada)
+Descripción:
+    se le aplica erosion a la img de entrada,
+    la cual elimina el ruido de la img
+*/
 Imagen* erosion(Imagen* img);
 
-// Entradas: Imagen* img (imagen erosionada)
-// Salidas: Imagen* (nueva imagen con la operación de dilatación aplicada)
-// Descripción: Aplica el filtro de dilatación utilizando un elemento estructurante de 3x3 para restaurar la forma.
+/*
+Entradas: 
+    img (Imagen: imagen que se desea aplicar "dilatar)
+Salidas:
+    Imagen (resultado de aplicar "dilatar" a la img de entrada)
+Descripción:
+    se le aplica erosion a la img de entrada, 
+    la cual restaura los circulos a su tamaño idea
+*/
 Imagen* dilatar(Imagen* img);
 
-
-// Entradas: Imagen* original, Imagen* preprocessed
-// Salidas: Imagen* (imagen resultante del ruido)
-// Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
+/*
+Entradas: 
+    img (Imagen: imagen original)
+    preprocesada (Imagen: imagen después de aplicar erosion y dilatar)
+Salidas:
+    Imagen (resultado de la resta de ambas imagenes, es el "ruido")
+Descripción:
+    a la imagen original se le resta la preprocesada
+    para obtener el rudio de la imagen original
+*/
 Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
 
-
-// Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)
-// Salidas: Punto* (arreglo dinámico con los centros detectados) y por referencia int* count (cantidad de centros)
-// Descripción: Genera el plano acumulador, realiza la votación de Hough basándose en la ecuación paramétrica del círculo y filtra los centros que superen el umbral t.
+/*
+Entradas: 
+    img (Imagen: img de la cual se va a buscar los centros deseados)
+    r (int: radio de los circulos que se desea buscar)
+    t (int: cantidad de votos necesarios para que se considere un centro valido)
+    count (int*: guarda la cantidad de centros encontrados)
+Salidas:
+    Punto* (retorna un arreglo de TDA Punto que guarda l)
+Descripción:
+    se le aplica erosion a la img de entrada, 
+    la cual restaura los circulos a su tamaño idea
+*/
 Punto* hough(Imagen* img, int r, int t, int* count);
 
-// Entradas: const char* filename, Punto* centers, int count
-// Salidas: int (1 si fue exitoso, 0 si hubo error)
-// Descripción: Exporta la lista de centros detectados (X, Y) a un archivo CSV.
+
 int generar_reporte(const char* filename, Punto* centers, int count);
 
 
-// Entradas: Imagen* img
-// Salidas: void
-// Descripción: Libera la memoria dinámica asignada para los píxeles y la estructura de la imagen.
+
+/*
+Entradas: 
+    img (Imagen: dato que se desea liberar)
+Salidas: 
+    void
+Descripcion:
+    Libera la memoria de los atributos y de la propia imagen recibida
+*/
 void free_image(Imagen* img);
 
-#endif // FUNCIONES_H
+#endif //FUNCIONES_H
