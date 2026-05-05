@@ -99,14 +99,13 @@ int main(int argc, char *argv[]){
     //buscar los centros deseados
     int cantidad_centros = 0;
     Punto* centros = hough(img_preprocesada,r,t,&cantidad_centros);
-
-    /*
-    int reporte = export_report(o, centros, cantidad_centros);
+    
+    int reporte = generar_reporte(o, centros, cantidad_centros);
     if(reporte==0){
         printf("No se pudo exportar el reporte final.\n");
         return 0;
     }
-    */
+    
    
     return 1;
 }

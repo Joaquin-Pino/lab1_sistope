@@ -90,6 +90,11 @@ Descripción:
 */
 Punto* hough(Imagen* img, int r, int t, int* count);
 
+
+int generar_reporte(const char* filename, Punto* centers, int count);
+
+
+
 /*
 Entradas: 
     img (Imagen: dato que se desea liberar)

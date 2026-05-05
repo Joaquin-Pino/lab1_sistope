@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "funciones.h"
 
@@ -255,28 +256,36 @@ Descripción:
     la cual restaura los circulos a su tamaño idea
 */
 Punto* hough(Imagen* img, int r, int t, int* count){
-    // creamos la matriz de votacion
+    // Validación de entrada
+    if (img == NULL || img->data == NULL || r <= 0 || count == NULL) {
+        if (count != NULL) *count = 0;
+        return NULL;
+    }
+
     int ancho = img->ancho;
     int alto = img->alto;
-    
+
     // Memoria dinamica inicializada en 0 (calloc)
     int *acumulador = (int*)calloc(ancho * alto, sizeof(int));
-    if (acumulador == NULL) return NULL;
+    if (acumulador == NULL) {
+        *count = 0;
+        return NULL;
+    }
 
     // Votamos por cada pixel que sea 1 (borde)
-    for (int y = 0; y < alto; y++) {  
+    for (int y = 0; y < alto; y++) {
         for (int x = 0; x < ancho; x++) {
-            
+
             if (img->data[y * ancho + x] == 1) {
-                
+
                 // Recorremos los 360 grados
                 for (int theta = 0; theta < 360; theta++) {
-                    
+
                     double radianes = theta * PI / 180.0;
-                    
-                    // Calculamos a y b (redondeados implícitamente al guardarse en int)
-                    int a = x - (int)(r * cos(radianes));
-                    int b = y - (int)(r * sin(radianes));
+
+                    // Redondeo simétrico al entero más cercano (en lugar de truncar)
+                    int a = x - (int)lround(r * cos(radianes));
+                    int b = y - (int)lround(r * sin(radianes));
 
                     // Verificamos límites
                     if (a >= 0 && a < ancho && b >= 0 && b < alto) {
@@ -286,6 +295,46 @@ Punto* hough(Imagen* img, int r, int t, int* count){
             }
         }
     }
+
+    // Non-Maximum Suppression: keep only local maxima within a window of radius win.
+    // Usamos una copia de los valores originales para evitar leer celdas ya suprimidas
+    // durante el barrido (bug de modificación in-place con empates en plateau).
+    int win = r / 2;
+    if (win < 1) win = 1;
+
+    int *acum_orig = (int*)malloc(ancho * alto * sizeof(int));
+    if (acum_orig == NULL) {
+        free(acumulador);
+        *count = 0;
+        return NULL;
+    }
+    for (int i = 0; i < ancho * alto; i++) {
+        acum_orig[i] = acumulador[i];
+    }
+
+    for (int b = 0; b < alto; b++) {
+        for (int a = 0; a < ancho; a++) {
+            int val = acum_orig[b * ancho + a];
+            if (val < t) continue;
+            int es_maximo = 1;
+            for (int ky = -win; ky <= win && es_maximo; ky++) {
+                for (int kx = -win; kx <= win && es_maximo; kx++) {
+                    if (kx == 0 && ky == 0) continue;
+                    int nb = b + ky, na = a + kx;
+
+                    if (nb >= 0 && nb < alto && na >= 0 && na < ancho) {
+                        int vecino = acum_orig[nb * ancho + na];
+                        // empate: pierde la celda que aparece después en orden de barrido
+                        if (vecino > val || (vecino == val && (nb < b || (nb == b && na < a)))) {
+                            es_maximo = 0;
+                        }
+                    }
+                }
+            }
+            if (!es_maximo) acumulador[b * ancho + a] = 0;
+        }
+    }
+    free(acum_orig);
 
     int total_centros = 0;
     for (int i = 0; i < ancho * alto; i++) {
@@ -325,6 +374,23 @@ Punto* hough(Imagen* img, int r, int t, int* count){
     return centros;
 }
 
+int generar_reporte(const char* filename, Punto* centers, int count) {
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Error: No se pudo abrir el archivo %s para escribir.\n", filename);
+        return 0;
+    }
+
+    // Escribimos la cabecera del CSV
+    fprintf(file, "X,Y\n");
+
+    // Escribimos cada centro detectado
+    for (int i = 0; i < count; i++) {
+        fprintf(file, "%d,%d\n", centers[i].x, centers[i].y);
+    }
+
+    fclose(file);
+    return 1;
 /*
 Entradas: 
     img (Imagen: dato que se desea liberar)
