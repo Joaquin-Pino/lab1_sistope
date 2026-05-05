@@ -9,6 +9,8 @@ int main(){
         return 1; // Error al cargar la imagen
     }
 
+    guardar_imagen("salida.bin", img);
+
     free_image(img); // Liberar memoria de la imagen cargada
     return 0;
 }
