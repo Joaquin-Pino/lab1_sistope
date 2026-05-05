@@ -158,3 +158,74 @@ Imagen* dilatar(Imagen* img){
 
     return out;
 }
+
+Punto* hough(Imagen* img, int r, int t, int* count){
+    // creamos la matriz de votacion
+    int ancho = img->ancho;
+    int alto = img->alto;
+    
+    // Memoria dinamica inicializada en 0 (calloc)
+    int *acumulador = (int*)calloc(ancho * alto, sizeof(int));
+    if (acumulador == NULL) return NULL;
+
+    // Votamos por cada pixel que sea 1 (borde)
+    for (int y = 0; y < alto; y++) {  
+        for (int x = 0; x < ancho; x++) {
+            
+            if (img->data[y * ancho + x] == 1) {
+                
+                // Recorremos los 360 grados
+                for (int theta = 0; theta < 360; theta++) {
+                    
+                    double radianes = theta * PI / 180.0;
+                    
+                    // Calculamos a y b (redondeados implícitamente al guardarse en int)
+                    int a = x - (int)(r * cos(radianes));
+                    int b = y - (int)(r * sin(radianes));
+
+                    // Verificamos límites
+                    if (a >= 0 && a < ancho && b >= 0 && b < alto) {
+                        acumulador[b * ancho + a]++; // Sumamos el voto
+                    }
+                }
+            }
+        }
+    }
+
+    int total_centros = 0;
+    for (int i = 0; i < ancho * alto; i++) {
+        if (acumulador[i] >= t) {
+            total_centros++;
+        }
+    }
+
+    // Actualizamos el puntero 'count' para que lab1.c sepa el tamaño del arreglo
+    *count = total_centros;
+
+    // Si no detectamos ningún círculo, limpiamos y retornamos NULL
+    if (total_centros == 0) {
+        free(acumulador);
+        return NULL;
+    }
+
+    // Asignar memoria exacta para los resultados
+    Punto* centros = (Punto*)malloc(total_centros * sizeof(Punto));
+    if (centros == NULL) {
+        free(acumulador);
+        printf("Error: Fallo al asignar memoria para los centros detectados.\n");
+        return NULL;    
+    }
+
+    // Extraer las coordenadas
+    int index = 0;
+    for (int i = 0; i < ancho * alto; i++) {
+        if (acumulador[i] >= t) {
+            centros[index].x = i % ancho; // Coordenada x mágica
+            centros[index].y = i / ancho; // Coordenada y mágica
+            index++;
+        }
+    }
+    
+    free(acumulador);
+    return centros;
+}

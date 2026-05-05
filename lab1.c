@@ -9,9 +9,12 @@ int main(){
         return 1; // Error al cargar la imagen
     }
     Imagen* img_erosionada = erosion(img);
-    guardar_imagen("salida.bin", img_erosionada);
+    Imagen* img_dilatada = dilatar(img_erosionada);
+    guardar_imagen("salida_erosionada.bin", img_erosionada);
+    guardar_imagen("salida_dilatada.bin", img_dilatada);
 
     free_image(img); // Liberar memoria de la imagen cargada
     free_image(img_erosionada); // Liberar memoria de la imagen erosionada
+    free_image(img_dilatada); // Liberar memoria de la imagen dilatada
     return 0;
 }
