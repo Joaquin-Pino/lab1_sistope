@@ -35,14 +35,10 @@ Imagen* erosion(Imagen* img);
 Imagen* dilatar(Imagen* img);
 
 
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
 // Entradas: Imagen* original, Imagen* preprocessed
 // Salidas: Imagen* (imagen resultante del ruido)
 // Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
 Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
 
 
 // Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)
@@ -50,15 +46,10 @@ Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
 // Descripción: Genera el plano acumulador, realiza la votación de Hough basándose en la ecuación paramétrica del círculo y filtra los centros que superen el umbral t.
 Punto* hough(Imagen* img, int r, int t, int* count);
 
-
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
 // Entradas: const char* filename, Punto* centers, int count
 // Salidas: int (1 si fue exitoso, 0 si hubo error)
 // Descripción: Exporta la lista de centros detectados (X, Y) a un archivo CSV.
-//int export_report(const char* filename, Punto* centers, int count);
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
-// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+int generar_reporte(const char* filename, Punto* centers, int count);
 
 
 // Entradas: Imagen* img
