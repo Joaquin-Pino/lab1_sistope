@@ -8,9 +8,10 @@ int main(){
     if (img == NULL) {
         return 1; // Error al cargar la imagen
     }
-
-    guardar_imagen("salida.bin", img);
+    Imagen* img_erosionada = erosion(img);
+    guardar_imagen("salida.bin", img_erosionada);
 
     free_image(img); // Liberar memoria de la imagen cargada
+    free_image(img_erosionada); // Liberar memoria de la imagen erosionada
     return 0;
 }

@@ -34,7 +34,7 @@ Imagen* dilatar(Imagen* img);
 // Entradas: Imagen* original, Imagen* preprocessed
 // Salidas: Imagen* (imagen resultante del ruido)
 // Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
-Imagen* get_noise(Imagen* original, Imagen* preprocessed);
+Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
 
 
 // Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)

@@ -60,4 +60,101 @@ int guardar_imagen(const char* filename, Imagen* img) {
     fclose(archivo);
     return 1;
 }
-    
+
+Imagen* erosion(Imagen* img){
+if (img == NULL) return NULL;
+
+    Imagen* out = (Imagen*)malloc(sizeof(Imagen));
+    out->ancho = img->ancho;
+    out->alto = img->alto;
+    out->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
+
+    int elemEstruct[9] = {0,1,0,1,1,1,0,1,0};
+
+    // Recorremos toda la imagen
+    for (int y = 0; y < img->alto; y++) {
+        for (int x = 0; x < img->ancho; x++) {
+            
+            int coincide = 1;
+
+            // Recorremos la ventana 3x3 alrededor del pixel (x, y)
+            // Usamos 'coincide' en la condición para detener el ciclo antes si ya fallo
+            for (int ky = -1; ky <= 1 && coincide; ky++) {
+                for (int kx = -1; kx <= 1; kx++) {
+                    
+                    // Calculamos el indice (0 al 8) del arreglo del elemento estructurante
+                    int se_index = (ky + 1) * 3 + (kx + 1);
+
+                    // Solo evaluamos se nos exige un '1' en esta pos
+                    if (elemEstruct[se_index] == 1) {
+                        // coordenadas de la imagen a evaluar
+                        int nx = x + kx;
+                        int ny = y + ky;
+
+                        // Verificamos si se sale de los bordes O si el píxel de la imagen es 0
+                        if (nx < 0 || nx >= img->ancho || ny < 0 || ny >= img->alto || 
+                            img->data[ny * img->ancho + nx] == 0) {
+
+                            coincide = 0; // No coincide, marcamos como 0
+                            break;      // Rompemos el ciclo kx
+                        }
+                    }
+                }
+            }
+
+            // Asignamos el resultado a la nueva imagen
+            out->data[y * out->ancho + x] = coincide;
+        }
+    }
+
+    return out;
+}
+
+Imagen* dilatar(Imagen* img){
+    if (img == NULL) return NULL;
+
+    Imagen* out = (Imagen*)malloc(sizeof(Imagen));
+    out->ancho = img->ancho;
+    out->alto = img->alto;
+    out->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
+
+    int elemEstruct[9] = {0,1,0,1,1,1,0,1,0};
+
+    // Recorremos toda la imagen
+    for (int y = 0; y < img->alto; y++) {
+        for (int x = 0; x < img->ancho; x++) {
+            
+            int coincide = 0;
+
+            // Recorremos la ventana 3x3 alrededor del pixel (x, y)
+            // Usamos 'coincide' en la condición para detener el ciclo antes si ya encontro un '1'
+            for (int ky = -1; ky <= 1 && !coincide; ky++) {
+                for (int kx = -1; kx <= 1 && !coincide; kx++) {
+                    
+                    // Calculamos el indice (0 al 8) del arreglo del elemento estructurante
+                    int se_index = (ky + 1) * 3 + (kx + 1);
+
+                    // Solo evaluamos se nos exige un '1' en esta pos
+                    if (elemEstruct[se_index] == 1) {
+                        // coordenadas de la imagen a evaluar
+                        int nx = x + kx;
+                        int ny = y + ky;
+
+                        // Verificamos si no se sale de los bordes Y si el píxel de la imagen es 1
+                        if (nx >= 0 && nx < img->ancho && ny >= 0 && ny < img->alto && 
+                            img->data[ny * img->ancho + nx] == 1) {
+
+                            coincide = 1; // Coincide, marcamos como 1
+                            break;      // Rompemos el ciclo kx
+                        }
+                    }
+                }
+            }
+
+            // Asignamos el resultado a la nueva imagen
+            out->data[y * out->ancho + x] = coincide;
+        }
+    }
+
+    return out;
+}
