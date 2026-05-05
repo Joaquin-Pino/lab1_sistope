@@ -81,15 +81,15 @@ int main(int argc, char *argv[]){
     //aplicar erosion a la imagen
     Imagen* img_preprocesada = erosion(img);
     //aplicar dilatación a la imagen
-    Imagen* img_preprocesada = dilatar(img_preprocesada);
+    img_preprocesada = dilatar(img_preprocesada);
 
     //guardar el ruido de la imagen normal y la preprocesada
-    Imagen* ruido = get_noise(img, img_preprocesada);
+    Imagen* img_ruido = get_ruido(img, img_preprocesada);
 
     //exportar los datos de Debug si está la flag
     if(d==1){
         int preprocesada = guardar_imagen("preprocesada.bin",img_preprocesada);
-        int ruido = guardar_imagen("ruido.bin",ruido);
+        int ruido = guardar_imagen("ruido.bin",img_ruido);
         //en caso de no ser exportadas avisar por terminal
         if(preprocesada == 0 || ruido == 0){
             printf("No se pudo exportar una de las imagenes de la flag -d.\n");
@@ -100,13 +100,13 @@ int main(int argc, char *argv[]){
     int cantidad_centros = 0;
     Punto* centros = hough(img_preprocesada,r,t,&cantidad_centros);
 
-    //generar el reporte de los centros
+    /*
     int reporte = export_report(o, centros, cantidad_centros);
     if(reporte==0){
         printf("No se pudo exportar el reporte final.\n");
         return 0;
     }
-
+    */
+   
     return 1;
-
 }

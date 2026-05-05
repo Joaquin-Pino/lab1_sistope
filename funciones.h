@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 
 #define PI 3.14159265358979323846
 
@@ -33,20 +34,32 @@ Imagen* erosion(Imagen* img);
 // Descripción: Aplica el filtro de dilatación utilizando un elemento estructurante de 3x3 para restaurar la forma.
 Imagen* dilatar(Imagen* img);
 
+
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
 // Entradas: Imagen* original, Imagen* preprocessed
 // Salidas: Imagen* (imagen resultante del ruido)
 // Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
 Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+
 
 // Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)
 // Salidas: Punto* (arreglo dinámico con los centros detectados) y por referencia int* count (cantidad de centros)
 // Descripción: Genera el plano acumulador, realiza la votación de Hough basándose en la ecuación paramétrica del círculo y filtra los centros que superen el umbral t.
 Punto* hough(Imagen* img, int r, int t, int* count);
 
+
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
 // Entradas: const char* filename, Punto* centers, int count
 // Salidas: int (1 si fue exitoso, 0 si hubo error)
 // Descripción: Exporta la lista de centros detectados (X, Y) a un archivo CSV.
-int export_report(const char* filename, Punto* centers, int count);
+//int export_report(const char* filename, Punto* centers, int count);
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+// ESTA WEA FALTAAAAAAAAAAAAAAAAAAA
+
 
 // Entradas: Imagen* img
 // Salidas: void
