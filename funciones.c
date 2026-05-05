@@ -242,7 +242,9 @@ Punto* hough(Imagen* img, int r, int t, int* count){
         *count = 0;
         return NULL;
     }
-    memcpy(acum_orig, acumulador, ancho * alto * sizeof(int));
+    for (int i = 0; i < ancho * alto; i++) {
+        acum_orig[i] = acumulador[i];
+    }
 
     for (int b = 0; b < alto; b++) {
         for (int a = 0; a < ancho; a++) {
