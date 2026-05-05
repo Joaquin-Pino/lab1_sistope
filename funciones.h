@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define PI 3.14159265358979323846
+
 // Estructura para manejar la imagen en memoria
 typedef struct {
     int ancho;// 4 bytes: Ancho de la imagen
@@ -34,7 +36,7 @@ Imagen* dilatar(Imagen* img);
 // Entradas: Imagen* original, Imagen* preprocessed
 // Salidas: Imagen* (imagen resultante del ruido)
 // Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
-Imagen* get_noise(Imagen* original, Imagen* preprocessed);
+Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
 
 // Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)
 // Salidas: Punto* (arreglo dinámico con los centros detectados) y por referencia int* count (cantidad de centros)
