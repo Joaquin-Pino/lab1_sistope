@@ -90,10 +90,17 @@ Descripción:
 */
 Punto* hough(Imagen* img, int r, int t, int* count);
 
-
-int generar_reporte(const char* filename, Punto* centers, int count);
-
-
+/*
+Entradas: 
+    nombre (String: nombre del archivo.csv de salida)
+    centros (Punto*: arreglo de TDA Punto, los centros encontrados)
+    count (int: cantidad de centros en el arreglo centros)
+Salidas: 
+    int (0: si no se pudo guardar el archivo, 1: se guardó el archivo correctamente)
+Descripcion:
+    genera el archivo .csv con el reporte de todos los centros encontrados
+*/
+int generar_reporte(const char* nombre, Punto* centros, int count);
 
 /*
 Entradas: 

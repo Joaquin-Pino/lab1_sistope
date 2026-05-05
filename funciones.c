@@ -374,10 +374,20 @@ Punto* hough(Imagen* img, int r, int t, int* count){
     return centros;
 }
 
-int generar_reporte(const char* filename, Punto* centers, int count) {
-    FILE *file = fopen(filename, "w");
+/*
+Entradas: 
+    nombre (String: nombre del archivo.csv de salida)
+    centros (Punto*: arreglo de TDA Punto, los centros encontrados)
+    count (int: cantidad de centros en el arreglo centros)
+Salidas: 
+    int (0: si no se pudo guardar el archivo, 1: se guardó el archivo correctamente)
+Descripcion:
+    genera el archivo .csv con el reporte de todos los centros encontrados
+*/
+int generar_reporte(const char* nombre, Punto* centros, int count) {
+    FILE *file = fopen(nombre, "w");
     if (file == NULL) {
-        printf("Error: No se pudo abrir el archivo %s para escribir.\n", filename);
+        printf("Error: No se pudo abrir el archivo %s para escribir.\n", nombre);
         return 0;
     }
 
@@ -386,11 +396,13 @@ int generar_reporte(const char* filename, Punto* centers, int count) {
 
     // Escribimos cada centro detectado
     for (int i = 0; i < count; i++) {
-        fprintf(file, "%d,%d\n", centers[i].x, centers[i].y);
+        fprintf(file, "%d,%d\n", centros[i].x, centros[i].y);
     }
 
     fclose(file);
     return 1;
+}
+
 /*
 Entradas: 
     img (Imagen: dato que se desea liberar)
