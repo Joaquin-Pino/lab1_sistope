@@ -3,51 +3,68 @@
 #include <math.h>
 #include "funciones.h"
 
-Imagen* cargar_imagen(const char* filename) {
-  FILE *file = fopen(filename, "rb");
-    if (file == NULL) {
-        printf("Error: No se pudo abrir el archivo %s\n", filename);
+/*
+Entradas: 
+    nombre (String: nombre del archivo a cargar)
+Salidas: 
+    Imagen (estructura utilizada para guardar los datos de la imagen)
+Descripcion: 
+    carga un archivo.bin al programa como un TDA Imagen
+*/
+Imagen* cargar_imagen(const char* nombre) {
+    //rb lectura binaria
+    FILE *archivo = fopen(nombre, "rb");
+    //verificar que el archivo existe    
+    if (archivo == NULL) {
+        printf("Error: No se pudo abrir el archivo %s\n", nombre);
         return NULL;
     }
 
-    // Reservar memoria para la estructura de la imagen
+    //reservar memoria para la estructura de la imagen
     Imagen *img = (Imagen*)malloc(sizeof(Imagen));
     if (img == NULL) {
         printf("Error: Fallo al asignar memoria para la imagen.\n");
-        fclose(file);
+        fclose(archivo);
         return NULL;
     }
 
-    // lectura de ancho y alto
-    fread(&(img->ancho), sizeof(int), 1, file);
-    fread(&(img->alto), sizeof(int), 1, file);
+    //lectura de ancho y alto
+    fread(&(img->ancho), sizeof(int), 1, archivo);
+    fread(&(img->alto), sizeof(int), 1, archivo);
 
-    int total_pixels = img->ancho * img->alto;
-    img->data = (unsigned char*)malloc(total_pixels * sizeof(unsigned char));
-    
+    //guardar arreglo de pixeles
+    int cant_pixeles = img->ancho * img->alto;
+    img->data = (unsigned char*)malloc(cant_pixeles * sizeof(unsigned char));
     if (img->data == NULL) {
         printf("Error: Fallo al asignar memoria para los píxeles.\n");
         free(img);
-        fclose(file);
+        fclose(archivo);
         return NULL;
     }
-    fread(img->data, sizeof(unsigned char), total_pixels, file);
+    //leer todos los pixeles y guardarlos
+    fread(img->data, sizeof(unsigned char), cant_pixeles, archivo);
 
-    fclose(file);
+    //cerrar archivo y retornar
+    fclose(archivo);
     return img;
 }
 
-void free_image(Imagen* img) {
-    if (img != NULL) {
-        free(img->data);
-        free(img);
-    }
-}
 
-int guardar_imagen(const char* filename, Imagen* img) {
-    FILE *archivo = fopen(filename, "wb");
+/*
+Entradas: 
+    nombre (String: nombre deseado para la imagen.bin)
+    img (Imagen: datos de la imagen que se desea guardar)
+Salidas:
+    int (0: no se pudo guardar, 1: se guardó correctamente)
+Descripción:
+    Se guarda la estructura Imagen recibida como un 
+    archivo binario con el nombre recibido
+*/
+int guardar_imagen(const char* nombre, Imagen* img) {
+    //wb escritura binaria
+    FILE *archivo = fopen(nombre, "wb");
     if (archivo == NULL) {
-        printf("Error: No se pudo abrir el archivo %s para escribir.\n", filename);
+        printf("Error: No se pudo abrir el archivo %s para escribir.\n", nombre);
         return 0;
     }
 
@@ -55,111 +72,147 @@ int guardar_imagen(const char* filename, Imagen* img) {
     fwrite(&(img->ancho), sizeof(int), 1, archivo);
     fwrite(&(img->alto), sizeof(int), 1, archivo);
 
+    //escribimos todos los pixeles en el archivo
     int total_pixels = img->ancho * img->alto;
     fwrite(img->data, sizeof(unsigned char), total_pixels, archivo);
 
+    //cerrar archivo y retornar
     fclose(archivo);
     return 1;
 }
 
+/*
+Entradas: 
+    img (Imagen: imagen que se desea aplicar "erosion")
+Salidas:
+    Imagen (resultado de aplicar "erosion" a la img de entrada)
+Descripción:
+    se le aplica erosion a la img de entrada,
+    la cual elimina el ruido de la img
+*/
 Imagen* erosion(Imagen* img){
-if (img == NULL) return NULL;
+    //si no hay imagen cancela
+    if (img == NULL) return NULL;
 
-    Imagen* out = (Imagen*)malloc(sizeof(Imagen));
-    out->ancho = img->ancho;
-    out->alto = img->alto;
-    out->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
+    //guardar memoria para la imagen de salida
+    Imagen* salida = (Imagen*)malloc(sizeof(Imagen));
+    salida->ancho = img->ancho;
+    salida->alto = img->alto;
+    salida->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
 
-    int elemEstruct[9] = {0,1,0,1,1,1,0,1,0};
+    //elemento estructurarante dado por el enunciado
+    int elEstructurante[9] = {0,1,0,1,1,1,0,1,0};
 
-    // Recorremos toda la imagen
+    //verificar por cada pixel
     for (int y = 0; y < img->alto; y++) {
         for (int x = 0; x < img->ancho; x++) {
             
+            //bandera para ver si el pixel coincide con el elemento
             int coincide = 1;
 
-            // Recorremos la ventana 3x3 alrededor del pixel (x, y)
-            // Usamos 'coincide' en la condición para detener el ciclo antes si ya fallo
+            //recorrer el elemento 3x3
+            //usamos "coincide" en la condición para detener el ciclo antes si ya fallo
             for (int ky = -1; ky <= 1 && coincide; ky++) {
                 for (int kx = -1; kx <= 1; kx++) {
                     
-                    // Calculamos el indice (0 al 8) del arreglo del elemento estructurante
-                    int se_index = (ky + 1) * 3 + (kx + 1);
+                    //calcular indice en el elemento 3x3
+                    int indice = (ky + 1) * 3 + (kx + 1);
 
-                    // Solo evaluamos se nos exige un '1' en esta pos
-                    if (elemEstruct[se_index] == 1) {
-                        // coordenadas de la imagen a evaluar
+                    //solo si hay un 1 en el elemento, verificamos la imagen
+                    if (elEstructurante[indice] == 1) {
+                        //coordenadas a evaluar de la imagen
                         int nx = x + kx;
                         int ny = y + ky;
 
-                        // Verificamos si se sale de los bordes O si el píxel de la imagen es 0
+                        //verificamos si se sale de los bordes O si el píxel de la imagen es 0
                         if (nx < 0 || nx >= img->ancho || ny < 0 || ny >= img->alto || 
                             img->data[ny * img->ancho + nx] == 0) {
 
-                            coincide = 0; // No coincide, marcamos como 0
-                            break;      // Rompemos el ciclo kx
+                            coincide = 0; //no coincide, marcamos como 0
+                            break; //rompemos el ciclo kx
                         }
                     }
                 }
             }
 
-            // Asignamos el resultado a la nueva imagen
-            out->data[y * out->ancho + x] = coincide;
+            //guardar el resultado en la imagen de salida
+            salida->data[y * salida->ancho + x] = coincide;
         }
     }
 
-    return out;
+    return salida;
 }
 
+/*
+Entradas: 
+    img (Imagen: imagen que se desea aplicar "dilatar)
+Salidas:
+    Imagen (resultado de aplicar "dilatar" a la img de entrada)
+Descripción:
+    se le aplica erosion a la img de entrada, 
+    la cual restaura los circulos a su tamaño idea
+*/
 Imagen* dilatar(Imagen* img){
     if (img == NULL) return NULL;
 
-    Imagen* out = (Imagen*)malloc(sizeof(Imagen));
-    out->ancho = img->ancho;
-    out->alto = img->alto;
-    out->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
+    Imagen* salida = (Imagen*)malloc(sizeof(Imagen));
+    salida->ancho = img->ancho;
+    salida->alto = img->alto;
+    salida->data = (unsigned char*)malloc(img->ancho * img->alto * sizeof(unsigned char));
 
-    int elemEstruct[9] = {0,1,0,1,1,1,0,1,0};
+    //elemento estructurarante dado por el enunciado
+    int elEstructurante[9] = {0,1,0,1,1,1,0,1,0};
 
-    // Recorremos toda la imagen
+    //verificar por cada pixel
     for (int y = 0; y < img->alto; y++) {
         for (int x = 0; x < img->ancho; x++) {
             
+            //bandera para ver si el pixel coincide con el elemento
             int coincide = 0;
 
-            // Recorremos la ventana 3x3 alrededor del pixel (x, y)
-            // Usamos 'coincide' en la condición para detener el ciclo antes si ya encontro un '1'
+            //recorrer el elemento 3x3
+            //usamos "coincide" en la condición para detener el ciclo antes si ya fallo
             for (int ky = -1; ky <= 1 && !coincide; ky++) {
                 for (int kx = -1; kx <= 1 && !coincide; kx++) {
                     
-                    // Calculamos el indice (0 al 8) del arreglo del elemento estructurante
+                    //calcular indice en el elemento 3x3
                     int se_index = (ky + 1) * 3 + (kx + 1);
 
-                    // Solo evaluamos se nos exige un '1' en esta pos
-                    if (elemEstruct[se_index] == 1) {
+                    //solo si hay un 1 en el elemento, verificamos la imagen
+                    if (elEstructurante[se_index] == 1) {
                         // coordenadas de la imagen a evaluar
                         int nx = x + kx;
                         int ny = y + ky;
 
-                        // Verificamos si no se sale de los bordes Y si el píxel de la imagen es 1
+                        //verificamos si no se sale de los bordes Y si el píxel de la imagen es 1
                         if (nx >= 0 && nx < img->ancho && ny >= 0 && ny < img->alto && 
                             img->data[ny * img->ancho + nx] == 1) {
 
-                            coincide = 1; // Coincide, marcamos como 1
-                            break;      // Rompemos el ciclo kx
+                            coincide = 1; //coincide, marcamos como 1
+                            break; //rompemos el ciclo kx
                         }
                     }
                 }
             }
 
-            // Asignamos el resultado a la nueva imagen
-            out->data[y * out->ancho + x] = coincide;
+            //guardar el resultado en la imagen de salida
+            salida->data[y * salida->ancho + x] = coincide;
         }
     }
 
-    return out;
+    return salida;
 }
 
+/*
+Entradas: 
+    img (Imagen: imagen original)
+    preprocesada (Imagen: imagen después de aplicar erosion y dilatar)
+Salidas:
+    Imagen (resultado de la resta de ambas imagenes, es el "ruido")
+Descripción:
+    a la imagen original se le resta la preprocesada
+    para obtener el rudio de la imagen original
+*/
 Imagen* get_ruido(Imagen* original, Imagen* preprocesada){
     //preparar imagen resultante y sus datos
     Imagen* resultado = (Imagen*)malloc(sizeof(Imagen));
@@ -167,7 +220,7 @@ Imagen* get_ruido(Imagen* original, Imagen* preprocesada){
     resultado->alto = original->alto;
     resultado->data = (unsigned char*)malloc(resultado->ancho * resultado->alto * sizeof(unsigned char));
 
-
+    //recorrer todos los pixeles de la imagen
     for(int i = 0; i < original->alto; i++){
         for(int j = 0; j< original->ancho; j++){
             int indice = i * original->ancho + j;
@@ -185,9 +238,22 @@ Imagen* get_ruido(Imagen* original, Imagen* preprocesada){
             }
         }
     }
+    //retornar resultado de la resta
     return resultado;
 }
 
+/*
+Entradas: 
+    img (Imagen: img de la cual se va a buscar los centros deseados)
+    r (int: radio de los circulos que se desea buscar)
+    t (int: cantidad de votos necesarios para que se considere un centro valido)
+    count (int*: guarda la cantidad de centros encontrados)
+Salidas:
+    Punto* (retorna un arreglo de TDA Punto que guarda l)
+Descripción:
+    se le aplica erosion a la img de entrada, 
+    la cual restaura los circulos a su tamaño idea
+*/
 Punto* hough(Imagen* img, int r, int t, int* count){
     // creamos la matriz de votacion
     int ancho = img->ancho;
@@ -257,4 +323,19 @@ Punto* hough(Imagen* img, int r, int t, int* count){
     
     free(acumulador);
     return centros;
+}
+
+/*
+Entradas: 
+    img (Imagen: dato que se desea liberar)
+Salidas: 
+    void
+Descripcion:
+    Libera la memoria de los atributos y de la propia imagen recibida
+*/
+void free_image(Imagen* img) {
+    if (img != NULL) {
+        free(img->data);
+        free(img);
+    }
 }
