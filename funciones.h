@@ -38,7 +38,6 @@ Imagen* dilatar(Imagen* img);
 // Descripción: Resta la imagen preprocesada a la imagen original para obtener los artefactos eliminados (ruido).
 Imagen* get_ruido(Imagen* original, Imagen* preprocessed);
 
-
 // Entradas: Imagen* img (imagen preprocesada), int r (radio a buscar), int t (umbral de votos)
 // Salidas: Punto* (arreglo dinámico con los centros detectados) y por referencia int* count (cantidad de centros)
 // Descripción: Genera el plano acumulador, realiza la votación de Hough basándose en la ecuación paramétrica del círculo y filtra los centros que superen el umbral t.
