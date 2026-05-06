@@ -1,4 +1,5 @@
-venv
+venv/
+__pycache__/
 lab1
 *.bin
 *.png
