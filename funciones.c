@@ -313,78 +313,85 @@ Punto* hough(Imagen* img, int r, int t, int* count){
         acum_orig[i] = acumulador[i];
     }
 
-    //por cada pixel
+    int total_centros = 0;
+
+    // Primer barrido: Contar cuántos centros (líderes) van a existir
     for (int b = 0; b < alto; b++) {
         for (int a = 0; a < ancho; a++) {
-            //extraer la cantidad de votos del pixel
             int val = acum_orig[b * ancho + a];
+            if (val < t) continue;
 
-            //no cumple la cantidad de votos exigida
-            if (val < t) {
-                acum_orig[b * ancho + a] = 0;//le quitamos los votos
-                continue;
-            }
-
-            int es_maximo = 1;
-            //ver el alrededor de ese pixel en un tamaño de (r/2)*(r/2)
-            for (int ky = -win; ky <= win && es_maximo; ky++) {
-                for (int kx = -win; kx <= win && es_maximo; kx++) {
-                    //si estás en el centro (el mismo pixel a revisar) saltalo
+            int es_lider = 1;
+            for (int ky = -win; ky <= win && es_lider; ky++) {
+                for (int kx = -win; kx <= win; kx++) {
                     if (kx == 0 && ky == 0) continue;
-                    //coordenadas a ver al rededor del pixel deseado
                     int nb = b + ky, na = a + kx;
 
-                    //ver que esté dentro de los limites de la imagen
                     if (nb >= 0 && nb < alto && na >= 0 && na < ancho) {
-                        //extraer la cantidad de votos del pixel vecino
                         int vecino = acum_orig[nb * ancho + na];
-                        //empate: pierde la celda que aparece después en orden de barrido
-                        if (vecino > val || (vecino == val && (nb < b || (nb == b && na < a)))) {
-                            es_maximo = 0;
+                        if (vecino > val) {
+                            es_lider = 0; break;
+                        } else if (vecino == val && (nb < b || (nb == b && na < a))) {
+                            es_lider = 0; break;
                         }
                     }
                 }
             }
-            //si no es maximo quitarle los votos
-            if (!es_maximo) acumulador[b * ancho + a] = 0;
-        }
-    }
-    free(acum_orig);
-
-    int total_centros = 0;
-    for (int i = 0; i < ancho * alto; i++) {
-        if (acumulador[i] >= t) {
-            total_centros++;
+            if (es_lider) total_centros++;
         }
     }
 
-    // Actualizamos el puntero 'count' para que lab1.c sepa el tamaño del arreglo
     *count = total_centros;
 
-    // Si no detectamos ningún círculo, limpiamos y retornamos NULL
     if (total_centros == 0) {
+        free(acum_orig);
         free(acumulador);
         return NULL;
     }
 
-    // Asignar memoria exacta para los resultados
     Punto* centros = (Punto*)malloc(total_centros * sizeof(Punto));
-    if (centros == NULL) {
-        free(acumulador);
-        printf("Error: Fallo al asignar memoria para los centros detectados.\n");
-        return NULL;    
-    }
-
-    // Extraer las coordenadas
     int index = 0;
-    for (int i = 0; i < ancho * alto; i++) {
-        if (acumulador[i] >= t) {
-            centros[index].x = i % ancho; // Coordenada x mágica
-            centros[index].y = i / ancho; // Coordenada y mágica
-            index++;
+
+    // Segundo barrido: Calcular los promedios y guardarlos
+    for (int b = 0; b < alto; b++) {
+        for (int a = 0; a < ancho; a++) {
+            int val = acum_orig[b * ancho + a];
+            if (val < t) continue;
+
+            int es_lider = 1;
+            int suma_x = a, suma_y = b, cant_empates = 1;
+
+            for (int ky = -win; ky <= win && es_lider; ky++) {
+                for (int kx = -win; kx <= win; kx++) {
+                    if (kx == 0 && ky == 0) continue;
+                    int nb = b + ky, na = a + kx;
+
+                    if (nb >= 0 && nb < alto && na >= 0 && na < ancho) {
+                        int vecino = acum_orig[nb * ancho + na];
+                        if (vecino > val) {
+                            es_lider = 0; break;
+                        } else if (vecino == val) {
+                            if (nb < b || (nb == b && na < a)) {
+                                es_lider = 0; break;
+                            }
+                            suma_x += na;
+                            suma_y += nb;
+                            cant_empates++;
+                        }
+                    }
+                }
+            }
+
+            if (es_lider) {
+                // Cálculo del centro geométrico promediado y redondeado al entero
+                centros[index].x = (int)lround((double)suma_x / cant_empates);
+                centros[index].y = (int)lround((double)suma_y / cant_empates);
+                index++;
+            }
         }
     }
-    
+
+    free(acum_orig);
     free(acumulador);
     return centros;
 }
