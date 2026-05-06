@@ -36,9 +36,11 @@ $ ./lab1 -i <imagen_entrada.bin> -r  <radio>  -t  <umbral>  -o  <reporte_salida.
 
 # Ejemplos de Ejecución (Distintos Radios y Umbrales)
 ./lab1 -i ejemplo1.bin -t 100 -r 35 -d -o salida.csv
+
 ./lab1 -i ejemplo1.bin -t 103 -r 60 -d -o salida.csv
 
 ./lab1 -i ejemplo2.bin -t 103 -r 40 -d -o salida.csv
+
 ./lab1 -i ejemplo2.bin -t 100 -r 60 -d -o salida.csv
 
 ./lab1 -i ejemplo3.bin  -t 100 -r 100 -d -o salida.csv
