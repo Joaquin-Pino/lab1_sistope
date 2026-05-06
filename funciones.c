@@ -351,6 +351,7 @@ Punto* hough(Imagen* img, int r, int t, int* count){
     }
     free(acum_orig);
 
+    //contar la cantidad de centros
     int total_centros = 0;
     for (int i = 0; i < ancho * alto; i++) {
         if (acumulador[i] >= t) {
@@ -358,16 +359,16 @@ Punto* hough(Imagen* img, int r, int t, int* count){
         }
     }
 
-    // Actualizamos el puntero 'count' para que lab1.c sepa el tamaño del arreglo
+    //actualizamos el puntero 'count' para que lab1.c sepa el tamaño del arreglo
     *count = total_centros;
 
-    // Si no detectamos ningún círculo, limpiamos y retornamos NULL
+    //si no encontramos círculos, retornamos puntero null
     if (total_centros == 0) {
         free(acumulador);
         return NULL;
     }
 
-    // Asignar memoria exacta para los resultados
+    //asignar memoria para los resultados
     Punto* centros = (Punto*)malloc(total_centros * sizeof(Punto));
     if (centros == NULL) {
         free(acumulador);
@@ -375,16 +376,17 @@ Punto* hough(Imagen* img, int r, int t, int* count){
         return NULL;    
     }
 
-    // Extraer las coordenadas
+    //extraer las coordenadas de cada centro
     int index = 0;
     for (int i = 0; i < ancho * alto; i++) {
         if (acumulador[i] >= t) {
-            centros[index].x = i % ancho; // Coordenada x mágica
-            centros[index].y = i / ancho; // Coordenada y mágica
+            centros[index].x = i % ancho; //coordenada x
+            centros[index].y = i / ancho; //coordenada y
             index++;
         }
     }
     
+    //liberar memoria usada y retornar los centros obtenidos
     free(acumulador);
     return centros;
 }
