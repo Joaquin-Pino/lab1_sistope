@@ -24,7 +24,7 @@ Para ejecutar los scripts de validación y visualización de resultados (como `V
 # Explicación de la Ejecución
 El programa se ejecuta desde la línea de comandos pasando los parámetros necesarios mediante flags. La estructura general de ejecución es la siguiente:
 
-$ ./lab1 -i <imagen_entrada.bin> -r <radio> -t <umbral> -o <reporte_salida.csv> [-d]
+$ ./lab1 -i <imagen_entrada.bin> -r  <radio>  -t  <umbral>  -o  <reporte_salida.csv>  [-d]
 
 ## Detalle de las Flags:
 * -i : Ruta del archivo de imagen binaria de entrada (.bin).
@@ -34,6 +34,14 @@ $ ./lab1 -i <imagen_entrada.bin> -r <radio> -t <umbral> -o <reporte_salida.csv> 
 * -d : (Opcional) Flag de "Debug Dump". Si se incluye, el programa exportará dos archivos adicionales: `preprocesada.bin` (imagen sin ruido) y `ruido.bin` (diferencia entre original y preprocesada).
 
 
-# Ejemplos de Ejecución (Distintos Radios y Umbrales), debe estar activado el venv.
-./lab1 -i ejemplo1.bin -t 100 -r 35 -d -o salida.csv && python/VerificacionVisual.py -i preprocesada.bin -c salida.csv
-./lab1 -i ejemplo1.bin -t 103 -r 60 -d -o salida.csv && python/VerificacionVisual.py -i preprocesada.bin -c salida.csv
+# Ejemplos de Ejecución (Distintos Radios y Umbrales)
+./lab1 -i ejemplo1.bin -t 100 -r 35 -d -o salida.csv
+./lab1 -i ejemplo1.bin -t 103 -r 60 -d -o salida.csv
+
+./lab1 -i ejemplo2.bin -t 103 -r 40 -d -o salida.csv
+./lab1 -i ejemplo2.bin -t 100 -r 60 -d -o salida.csv
+
+./lab1 -i ejemplo3.bin  -t 100 -r 100 -d -o salida.csv
+
+## para ver la salida de cada ejecucion se debe usar (debe estar activado el venv):
+python python/VerificacionVisual.py -i preprocesada.bin -c salida.csv
