@@ -252,11 +252,11 @@ Entradas:
 Salidas:
     Punto* (retorna un arreglo de TDA Punto que guarda l)
 Descripción:
-    se le aplica erosion a la img de entrada, 
-    la cual restaura los circulos a su tamaño idea
+    se aplica la votación de hough a cada pixel, con esto
+    se buscan los centros de los circulos con el radio indicado
 */
 Punto* hough(Imagen* img, int r, int t, int* count){
-    // Validación de entrada
+    //validación de entrada
     if (img == NULL || img->data == NULL || r <= 0 || count == NULL) {
         if (count != NULL) *count = 0;
         return NULL;
@@ -265,43 +265,44 @@ Punto* hough(Imagen* img, int r, int t, int* count){
     int ancho = img->ancho;
     int alto = img->alto;
 
-    // Memoria dinamica inicializada en 0 (calloc)
+    //memoria dinamica inicializada en 0 (calloc)
     int *acumulador = (int*)calloc(ancho * alto, sizeof(int));
     if (acumulador == NULL) {
         *count = 0;
         return NULL;
     }
 
-    // Votamos por cada pixel que sea 1 (borde)
+    //votamos por cada pixel que sea 1 (borde)
     for (int y = 0; y < alto; y++) {
         for (int x = 0; x < ancho; x++) {
 
+            //si hay un pixel blanco
             if (img->data[y * ancho + x] == 1) {
 
-                // Recorremos los 360 grados
+                //recorremos los 360 grados
                 for (int theta = 0; theta < 360; theta++) {
 
                     double radianes = theta * PI / 180.0;
 
-                    // Redondeo simétrico al entero más cercano (en lugar de truncar)
+                    //redondeo simétrico al entero más cercano (en lugar de truncar)
                     int a = x - (int)lround(r * cos(radianes));
                     int b = y - (int)lround(r * sin(radianes));
 
-                    // Verificamos límites
+                    //verificamos límites
                     if (a >= 0 && a < ancho && b >= 0 && b < alto) {
-                        acumulador[b * ancho + a]++; // Sumamos el voto
+                        //sumamos el voto a ese pixel
+                        acumulador[b * ancho + a]++;
                     }
                 }
             }
         }
     }
 
-    // Non-Maximum Suppression: keep only local maxima within a window of radius win.
-    // Usamos una copia de los valores originales para evitar leer celdas ya suprimidas
-    // durante el barrido (bug de modificación in-place con empates en plateau).
+    //tamaño de un cuadro a revisar por cada pixel con votos
     int win = r / 2;
     if (win < 1) win = 1;
 
+    //copiar el arreglo con las votaciones por pixel
     int *acum_orig = (int*)malloc(ancho * alto * sizeof(int));
     if (acum_orig == NULL) {
         free(acumulador);
@@ -312,25 +313,39 @@ Punto* hough(Imagen* img, int r, int t, int* count){
         acum_orig[i] = acumulador[i];
     }
 
+    //por cada pixel
     for (int b = 0; b < alto; b++) {
         for (int a = 0; a < ancho; a++) {
+            //extraer la cantidad de votos del pixel
             int val = acum_orig[b * ancho + a];
-            if (val < t) continue;
+
+            //no cumple la cantidad de votos exigida
+            if (val < t) {
+                acum_orig[b * ancho + a] = 0;//le quitamos los votos
+                continue;
+            }
+
             int es_maximo = 1;
+            //ver el alrededor de ese pixel en un tamaño de (r/2)*(r/2)
             for (int ky = -win; ky <= win && es_maximo; ky++) {
                 for (int kx = -win; kx <= win && es_maximo; kx++) {
+                    //si estás en el centro (el mismo pixel a revisar) saltalo
                     if (kx == 0 && ky == 0) continue;
+                    //coordenadas a ver al rededor del pixel deseado
                     int nb = b + ky, na = a + kx;
 
+                    //ver que esté dentro de los limites de la imagen
                     if (nb >= 0 && nb < alto && na >= 0 && na < ancho) {
+                        //extraer la cantidad de votos del pixel vecino
                         int vecino = acum_orig[nb * ancho + na];
-                        // empate: pierde la celda que aparece después en orden de barrido
+                        //empate: pierde la celda que aparece después en orden de barrido
                         if (vecino > val || (vecino == val && (nb < b || (nb == b && na < a)))) {
                             es_maximo = 0;
                         }
                     }
                 }
             }
+            //si no es maximo quitarle los votos
             if (!es_maximo) acumulador[b * ancho + a] = 0;
         }
     }
